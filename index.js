@@ -4,6 +4,7 @@ const db = new Database.Database('./Database', {
     cli: false,
     deep: true
 });
+// Weeeeeeeeeeeeeeeeeeeeeeeeeee
 const discord = require('discord.js');
 const Canvas = require('canvas');
 const fs = require('fs');
