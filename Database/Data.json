@@ -1,0 +1,29 @@
+{
+  "t": [
+    "p",
+    1,
+    3
+  ],
+  "server_settings": {
+    "710847318886449152": {
+      "ban_limit": {
+        "enabled": true,
+        "untrusted": 2,
+        "trusted": 10,
+        "forewarn": 1
+      },
+      "kick_limit": {
+        "enabled": false
+      },
+      "untrusted_member": [
+        "847683843774480384"
+      ]
+    },
+    "935590729181458443": {
+      "ban_limit": {
+        "forewarn": 10
+      }
+    }
+  },
+  "server_data": {}
+}
