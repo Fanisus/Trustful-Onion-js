@@ -4,7 +4,6 @@ const db = new Database.Database('./Database', {
     cli: false,
     deep: true
 });
-// Weeeeeeeeeeeeeeeeeeeeeeeeeee
 const discord = require('discord.js');
 const Canvas = require('canvas');
 const fs = require('fs');
@@ -58,10 +57,9 @@ fs.readdir('./events/', (err, files) => {
     });
 });
 
-/*
-client.on('guildBanAdd', (guild, user) => {
-    
-})*/
+
+
+
 client.on('guildBanAdd', async (ban) => {
     ban.guild.members.unban(ban.user.id)
     let banner
@@ -198,6 +196,18 @@ client.on('messageCreate', async message => {
 
 
         message.channel.send({ files: [{ attachment: canvas.toBuffer(), name: 'profile.png' }] });
+    }
+    else if (command == "ticket") {
+        if (message.guild.me.permissions.has("MANAGE_CHANNELS")) return
+        let ticket_channel
+        let channel = await message.guild.channels.create("ticket", { type: "text", permissionOverwrites: [{ id: message.author.id, allow: ['VIEW_CHANNEL'] }, { id: message.guild.roles.everyone.id, deny: ['SEND_MESSAGES'] }] }).then(async channel => {
+            message.channel.send(`Ticket channel created. Move it where you want it to be and make sure I and the Members can see it.`)
+            db.set(`server_settings.${message.guild.id}.ticket.channel`, channel.id)
+            ticket_channel = await message.guild.channels.fetch(channel.id)
+        })
+        const embed = new discord.MessageEmbed().setTitle("Support Ticket").setDescription("Click the button below to create a ticket").setColor("#00ff00").setFooter({ text: "You can change the text of this embed. Type !ticket embed help" })
+        const button = new discord.MessageActionRow().addComponents(new discord.MessageButton().setCustomId("ticket_Create").setEmoji("📧").setLabel("Create a Ticket").setStyle("SECONDARY"))
+        ticket_channel.send({ embed: embed, actions: button })
     }
 })
 
