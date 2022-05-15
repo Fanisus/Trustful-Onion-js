@@ -4,6 +4,7 @@ const db = new Database.Database('./Database', {
     cli: false,
     deep: true
 });
+const wait = require('node:timers/promises').setTimeout;
 const discord = require('discord.js');
 const Canvas = require('canvas');
 const fs = require('fs');
@@ -30,23 +31,7 @@ fs.readdirSync('./commands/').forEach(dir => {
     })
 });
 console.log("Total Number of Commands: " + TotalCommands);
-/*
-fs.readdir(`./commands/`, (error, files) => {
-    if (error) { return console.log("Error while trying to get the commmands."); };
-    files.forEach(file => {
-        if (!file.endsWith('.js')) return
-        const command = require(`./commands/${file}`);
-        const commandName = file.split(".")[0];
-        client.commands.set(commandName, command);
-        if (command.aliases) {
-            command.aliases.forEach(alias => {
-                client.aliases.set(alias, command);
-            });
-        };
-        console.log(`Loading Command '${commandName}'`);
-    });
-});
-*/
+
 fs.readdir('./events/', (err, files) => {
     if (err) return console.error(err);
     files.forEach(file => {
@@ -56,9 +41,6 @@ fs.readdir('./events/', (err, files) => {
         client.on(eventName, event.bind(null, client));
     });
 });
-
-
-
 
 client.on('guildBanAdd', async (ban) => {
     ban.guild.members.unban(ban.user.id)
@@ -149,9 +131,7 @@ client.on('guildBanAdd', async (ban) => {
     console.log(`${banner} banned ${ban.user.id}`);
 })
 
-
-client.login('OTYzNDU1MjI5MDIwNDc1NDEy.GRXK7r.C1IuXv83sT9gr5guLmpv6R__W7SDLkhSEUh04U')
-
+client.login("OTYzNDU1MjI5MDIwNDc1NDEy.GeZXmz.6wYqJTuqI3KRPIeQdaxndiIq27c4OB48uq_qRU");
 
 client.on('messageCreate', async message => {
     let args = message.content.slice(prefix.length).trim().split(/ +/g);
@@ -198,16 +178,47 @@ client.on('messageCreate', async message => {
         message.channel.send({ files: [{ attachment: canvas.toBuffer(), name: 'profile.png' }] });
     }
     else if (command == "ticket") {
-        if (message.guild.me.permissions.has("MANAGE_CHANNELS")) return
-        let ticket_channel
-        let channel = await message.guild.channels.create("ticket", { type: "text", permissionOverwrites: [{ id: message.author.id, allow: ['VIEW_CHANNEL'] }, { id: message.guild.roles.everyone.id, deny: ['SEND_MESSAGES'] }] }).then(async channel => {
+        if (!message.guild.me.permissions.has("MANAGE_CHANNELS")) return message.channel.send("I don't have the permission to create channels")
+        if (!message.guild.me.permissions.has("SEND_MESSAGES")) return message.channel.send("I don't have the permission to send messages")
+        if (!message.guild.me.permissions.has("VIEW_CHANNEL")) return message.channel.send("I don't have the permission to view channels")
+        await message.guild.channels.create("ticket", { type: "text", permissionOverwrites: [{ id: message.guild.roles.everyone.id, deny: ['SEND_MESSAGES'] }, { id: message.guild.me.id, allow: ['SEND_MESSAGES', 'ADD_REACTIONS', 'ATTACH_FILES', 'CREATE_INSTANT_INVITE', 'CREATE_PRIVATE_THREADS', 'CREATE_PUBLIC_THREADS', 'EMBED_LINKS', 'MANAGE_CHANNELS', 'MANAGE_MESSAGES', 'MANAGE_THREADS', 'MANAGE_WEBHOOKS', 'READ_MESSAGE_HISTORY', 'SEND_MESSAGES_IN_THREADS', 'VIEW_CHANNEL', 'USE_EXTERNAL_EMOJIS', 'USE_EXTERNAL_STICKERS', 'USE_APPLICATION_COMMANDS'] }] }).then(async channel => {
             message.channel.send(`Ticket channel created. Move it where you want it to be and make sure I and the Members can see it.`)
             db.set(`server_settings.${message.guild.id}.ticket.channel`, channel.id)
-            ticket_channel = await message.guild.channels.fetch(channel.id)
+            let ticket_channel = await message.guild.channels.fetch(channel.id)
+            const embed = new discord.MessageEmbed().setTitle("Support Ticket").setDescription("Click the button below to create a ticket").setColor("#00ff00").setFooter({ text: "You can change the text of this embed. Type !ticket embed help" })
+            const button = new discord.MessageActionRow().addComponents(new discord.MessageButton().setCustomId("ticket_Create").setEmoji("📧").setLabel("Create a Ticket").setStyle("SECONDARY"))
+            ticket_channel.send({ components: [button], embeds: [embed] })
         })
-        const embed = new discord.MessageEmbed().setTitle("Support Ticket").setDescription("Click the button below to create a ticket").setColor("#00ff00").setFooter({ text: "You can change the text of this embed. Type !ticket embed help" })
-        const button = new discord.MessageActionRow().addComponents(new discord.MessageButton().setCustomId("ticket_Create").setEmoji("📧").setLabel("Create a Ticket").setStyle("SECONDARY"))
-        ticket_channel.send({ embed: embed, actions: button })
+    }
+})
+client.on('interactionCreate', async interaction => {
+    if (interaction.isButton()) {
+        if (interaction.customId.toLowerCase() == "ticket_create") {
+            await interaction.guild.channels.create(interaction.user.username + "_" + interaction.user.id, {
+                type: "text",
+                parent: interaction.channel.parentId,
+                permissionOverwrites: [{ id: interaction.user.id, allow: ["SEND_MESSAGES", "VIEW_CHANNEL", "CREATE_INSTANT_INVITE", "READ_MESSAGE_HISTORY", "SEND_MESSAGES_IN_THREADS", "CREATE_PRIVATE_THREADS", "CREATE_PUBLIC_THREADS"] }, { id: interaction.guild.roles.everyone.id, deny: ['SEND_MESSAGES'] }, { id: interaction.guild.me.id, allow: ['SEND_MESSAGES', 'ADD_REACTIONS', 'ATTACH_FILES', 'CREATE_INSTANT_INVITE', 'CREATE_PRIVATE_THREADS', 'CREATE_PUBLIC_THREADS', 'EMBED_LINKS', 'MANAGE_CHANNELS', 'MANAGE_MESSAGES', 'MANAGE_THREADS', 'MANAGE_WEBHOOKS', 'READ_MESSAGE_HISTORY', 'SEND_MESSAGES_IN_THREADS', 'VIEW_CHANNEL', 'USE_EXTERNAL_EMOJIS', 'USE_EXTERNAL_STICKERS', 'USE_APPLICATION_COMMANDS'] }]
+            }).then(async channel => {
+                interaction.reply({ content: `Your ticket has been created. You can view it here: <#${channel.id}>`, ephemeral: true })
+                db.push(`server_settings.${interaction.guild.id}.ticket.open_tickets`, channel.id)
+                let ticket_channel = await channel.guild.channels.fetch(channel.id)
+                const embed = new discord.MessageEmbed().setTitle("Support Ticket").setDescription(`<@${interaction.guild.id}> Welcome to your ticket! Ask your questions here. If your question is done answering you can close the ticket by clicking the button below.`).setColor("#00ff00")
+                const button = new discord.MessageActionRow().addComponents([new discord.MessageButton().setCustomId("ticket_Close").setEmoji("❌").setLabel("Close Ticket").setStyle("DANGER"), new discord.MessageButton().setCustomId("ticket_Transcribe").setEmoji("📄").setLabel("Transcribe").setStyle("PRIMARY")])
+                ticket_channel.send({ components: [button], embeds: [embed] })
+            })
+        }
+        else if (interaction.customId.toLowerCase() == "ticket_close") {
+            interaction.reply({ content: "Your ticket has been closed.", ephemeral: true })
+            db.remove(`server_settings.${interaction.guild.id}.ticket.open_tickets`, interaction.channel.id)
+            setTimeout(() => interaction.channel.delete(), 5000)
+        }
+        else if (interaction.customId.toLowerCase() == "ticket_transcribe") {
+            interaction.deferReply()
+            interaction.channel.messages.fetch().then(async messages => {
+                fs.writeFileSync(`./ticket_${interaction.channel.id}.txt`, messages.map(message => message.author.username + " - " + message.content + "\n" + message.createdAt.toUTCString() + "\n").join("\n").toString())
+                interaction.editReply({ files: [{ attachment: fs.readFileSync(`./ticket_${interaction.channel.id}.txt`), name: `ticket_${interaction.channel.id}.txt` }] }).finally(() => fs.unlinkSync(`./ticket_${interaction.channel.id}.txt`))
+            })
+        }
     }
 })
 

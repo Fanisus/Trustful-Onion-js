@@ -20,8 +20,9 @@
       ],
       "ticket": {
         "enabled": true,
-        "channel": "975368578637385748",
-        "role": "710847318886449152"
+        "channel": "975468505149374474",
+        "role": "710847318886449152",
+        "open_tickets": []
       },
       "template": {
         "channels": [
