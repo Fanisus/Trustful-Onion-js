@@ -7,6 +7,7 @@ const db = new Database.Database('./Database', {
 // Weeeeeeeeeeeeeeeeeeeeeeeeeee
 const discord = require('discord.js');
 const Canvas = require('canvas');
+const translate = require('translate');
 const fs = require('fs');
 const client = new discord.Client({ intents: [discord.Intents.FLAGS.DIRECT_MESSAGES, discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS, discord.Intents.FLAGS.DIRECT_MESSAGE_TYPING, discord.Intents.FLAGS.GUILDS, discord.Intents.FLAGS.GUILD_BANS, discord.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, discord.Intents.FLAGS.GUILD_INTEGRATIONS, discord.Intents.FLAGS.GUILD_INVITES, discord.Intents.FLAGS.GUILD_MEMBERS, discord.Intents.FLAGS.GUILD_MESSAGES, discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS, discord.Intents.FLAGS.GUILD_MESSAGE_TYPING, discord.Intents.FLAGS.GUILD_PRESENCES, discord.Intents.FLAGS.GUILD_VOICE_STATES, discord.Intents.FLAGS.GUILD_WEBHOOKS] });
 const moment = require('moment');
@@ -14,6 +15,24 @@ const now = moment().utc().format('D/M/YYYY/h/m/s')
 let prefix = "!";
 client.commands = new discord.Collection()
 client.aliases = new discord.Collection()
+let TotalCommands = 0
+fs.readdirSync('./commands/').forEach(dir => {
+    fs.readdirSync(`./commands/${dir}/`).filter(file => {
+        if (!file.endsWith('.js')) return
+        const command = require(`./commands/${dir}/${file}`);
+        const commandName = file.split(".")[0];
+        client.commands.set(commandName, command);
+        if (command.aliases) {
+            command.aliases.forEach(alias => {
+                client.aliases.set(alias, command);
+            });
+        };
+        TotalCommands++
+        console.log(`Loading Type: COMMAND\nNAME: '${commandName}'\nLOCATION: './commands/${dir}/${file}'\n`);
+    })
+});
+console.log("Total Number of Commands: " + TotalCommands);
+/*
 fs.readdir(`./commands/`, (error, files) => {
     if (error) { return console.log("Error while trying to get the commmands."); };
     files.forEach(file => {
@@ -29,6 +48,7 @@ fs.readdir(`./commands/`, (error, files) => {
         console.log(`Loading Command '${commandName}'`);
     });
 });
+*/
 fs.readdir('./events/', (err, files) => {
     if (err) return console.error(err);
     files.forEach(file => {
@@ -140,7 +160,7 @@ client.on('messageCreate', async message => {
     let args = message.content.slice(prefix.length).trim().split(/ +/g);
     let command = args.shift().toLowerCase();
     if (command === 'prof') {
-        message.reply({allowedMentions: false, content: "OK"})
+        message.reply({ allowedMentions: false, content: "OK" })
         let avatar_size = 175
         const canvas = Canvas.createCanvas(700, 250);
         const ctx = canvas.getContext('2d');
@@ -157,7 +177,7 @@ client.on('messageCreate', async message => {
         ctx.closePath()
         ctx.stroke()
         ctx.globalAlpha = 1
-        
+
         ctx.fillText(`${message.author.username}#${message.author.discriminator}`, canvas.width / 2, canvas.height / 3);
         ctx.font = '20px Comic Sans MS';
         ctx.fillStyle = '#ffffff';
