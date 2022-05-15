@@ -6,7 +6,7 @@ const db = new Database.Database('./Database', {
 });
 module.exports = (client, message) => {
     if (message.author.bot) return;
-    const prefix = "!";
+    const prefix = "$";
     if (message.content.indexOf(prefix) !== 0) return;
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
