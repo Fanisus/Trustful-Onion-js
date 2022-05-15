@@ -11,7 +11,7 @@ const fs = require('fs');
 const client = new discord.Client({ intents: [discord.Intents.FLAGS.DIRECT_MESSAGES, discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS, discord.Intents.FLAGS.DIRECT_MESSAGE_TYPING, discord.Intents.FLAGS.GUILDS, discord.Intents.FLAGS.GUILD_BANS, discord.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, discord.Intents.FLAGS.GUILD_INTEGRATIONS, discord.Intents.FLAGS.GUILD_INVITES, discord.Intents.FLAGS.GUILD_MEMBERS, discord.Intents.FLAGS.GUILD_MESSAGES, discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS, discord.Intents.FLAGS.GUILD_MESSAGE_TYPING, discord.Intents.FLAGS.GUILD_PRESENCES, discord.Intents.FLAGS.GUILD_VOICE_STATES, discord.Intents.FLAGS.GUILD_WEBHOOKS] });
 const moment = require('moment');
 const now = moment().utc().format('D/M/YYYY/h/m/s')
-let prefix = "!";
+let prefix = "$";
 client.commands = new discord.Collection()
 client.aliases = new discord.Collection()
 let TotalCommands = 0
@@ -181,6 +181,14 @@ client.on('messageCreate', async message => {
         if (!message.guild.me.permissions.has("MANAGE_CHANNELS")) return message.channel.send("I don't have the permission to create channels")
         if (!message.guild.me.permissions.has("SEND_MESSAGES")) return message.channel.send("I don't have the permission to send messages")
         if (!message.guild.me.permissions.has("VIEW_CHANNEL")) return message.channel.send("I don't have the permission to view channels")
+        let old_ticket_channel = await db.get(`server_settings.${message.guild.id}.ticket.channel`)
+        if (db.has(`server_settings.${message.guild.id}.ticket.channel`)) {
+            let old_channel = await message.guild.channels.fetch()
+            if (old_channel.has(old_ticket_channel)) {
+                let old_channel = await message.guild.channels.fetch(old_ticket_channel)
+                old_channel.delete()
+            }
+        }
         await message.guild.channels.create("ticket", { type: "text", permissionOverwrites: [{ id: message.guild.roles.everyone.id, deny: ['SEND_MESSAGES'] }, { id: message.guild.me.id, allow: ['SEND_MESSAGES', 'ADD_REACTIONS', 'ATTACH_FILES', 'CREATE_INSTANT_INVITE', 'CREATE_PRIVATE_THREADS', 'CREATE_PUBLIC_THREADS', 'EMBED_LINKS', 'MANAGE_CHANNELS', 'MANAGE_MESSAGES', 'MANAGE_THREADS', 'MANAGE_WEBHOOKS', 'READ_MESSAGE_HISTORY', 'SEND_MESSAGES_IN_THREADS', 'VIEW_CHANNEL', 'USE_EXTERNAL_EMOJIS', 'USE_EXTERNAL_STICKERS', 'USE_APPLICATION_COMMANDS'] }] }).then(async channel => {
             message.channel.send(`Ticket channel created. Move it where you want it to be and make sure I and the Members can see it.`)
             db.set(`server_settings.${message.guild.id}.ticket.channel`, channel.id)
