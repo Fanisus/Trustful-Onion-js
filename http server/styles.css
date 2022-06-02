@@ -43,8 +43,8 @@ P {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
+  -webkit-transition: 5s;
+  transition: 5s;
 }
 
 .slider:before {
@@ -55,8 +55,8 @@ P {
   left: 4px;
   bottom: 4px;
   background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
+  -webkit-transition: 3s;
+  transition: 3s;
 }
 
 input:checked + .slider {
