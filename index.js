@@ -4,13 +4,11 @@ const db = new Database.Database('./Database', {
     cli: false,
     deep: true
 });
-
 const ms = require('ms')
 const discord = require('discord.js');
 const Canvas = require('canvas');
 const fs = require('fs');
 const client = new discord.Client({ intents: [discord.Intents.FLAGS.DIRECT_MESSAGES, discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS, discord.Intents.FLAGS.DIRECT_MESSAGE_TYPING, discord.Intents.FLAGS.GUILDS, discord.Intents.FLAGS.GUILD_BANS, discord.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, discord.Intents.FLAGS.GUILD_INTEGRATIONS, discord.Intents.FLAGS.GUILD_INVITES, discord.Intents.FLAGS.GUILD_MEMBERS, discord.Intents.FLAGS.GUILD_MESSAGES, discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS, discord.Intents.FLAGS.GUILD_MESSAGE_TYPING, discord.Intents.FLAGS.GUILD_PRESENCES, discord.Intents.FLAGS.GUILD_VOICE_STATES, discord.Intents.FLAGS.GUILD_WEBHOOKS] });
-const moment = require('moment');
 const now = new Date().getTime()
 let prefix = "$";
 client.commands = new discord.Collection()
@@ -32,7 +30,7 @@ fs.readdirSync('./commands/').forEach(dir => {
     })
 });
 console.log("Total Number of Commands: " + TotalCommands);
-
+client.
 fs.readdir('./events/', (err, files) => {
     if (err) return console.error(err);
     files.forEach(file => {
@@ -147,26 +145,38 @@ client.on('messageCreate', async message => {
         ctx.font = '20px Comic Sans MS';
         let font_size = ctx.measureText("M").width
         ctx.fillStyle = '#ffffff';
+        // Background transparent box
         ctx.lineWidth = 40
         ctx.globalAlpha = 0.3
         ctx.beginPath()
-        ctx.moveTo(canvas.width / 2 - font_size, (canvas.height / 3) - (font_size / 2.25))
+        ctx.moveTo(canvas.width / 2.5 - font_size, (canvas.height / 3) - (font_size / 2.25))
         ctx.lineTo(canvas.width / 1.05, canvas.height / 3)
         ctx.closePath()
         ctx.stroke()
-        ctx.globalAlpha = 1
+        // Background transparent box end
 
-        ctx.fillText(`${message.author.username}#${message.author.discriminator}`, canvas.width / 2, canvas.height / 3);
+        ctx.globalAlpha = 1
+        ctx.fillText(`${message.author.username}#${message.author.discriminator}`, canvas.width / 2.5, canvas.height / 3);
         ctx.font = '20px Comic Sans MS';
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(`${message.author.id}`, canvas.width / 2, canvas.height / 1);
+
+        ctx.lineWidth = 40
+        ctx.globalAlpha = 0.3
+        ctx.beginPath()
+        ctx.moveTo(canvas.width / 2.5 - font_size, (canvas.height / 2) - (font_size / 2.25))
+        ctx.lineTo(canvas.width / 1.05, canvas.height / 2)
+        ctx.closePath()
+        ctx.stroke()
+
+        ctx.globalAlpha = 1
+        ctx.fillText(`${message.author.id}`, canvas.width / 2.5, canvas.height / 2);
         ctx.strokeStyle = '#000000';
 
         const avatar = await Canvas.loadImage(message.author.displayAvatarURL({ format: 'png' }));
         ctx.lineWidth = 1
         ctx.globalAlpha = 1
         let avatarsize = (canvas.height - avatar_size) / 2 // 37.5
-        ctx.strokeRect(avatarsize / 1.5, avatarsize, 175, 175); // Rectangle to fit it i
+        // ctx.strokeRect(avatarsize / 1.5, avatarsize, 175, 175); // Rectangle to fit it i
         ctx.beginPath()
         ctx.arc(avatarsize / 1.5 + avatar_size / 2, avatarsize + avatar_size / 2, avatar_size / 2, 0, Math.PI * 2, true);
         ctx.clip()
@@ -206,10 +216,10 @@ client.on('messageCreate', async message => {
             let messages = await db.get(`server_settings.${message.guild.id}.giveaway.messages`)
             let msgIndex = Array(messages).indexOf(msg.id)
 
+;(await client.guilds.fetch()).forEach(
 
 
 
-            
         }, ms(time));
     }
     else if (command === 'sg') {
@@ -277,5 +287,8 @@ client.on('messageCreate', async message => {
     }
 })
 client.on('interactionCreate', async interaction => {
+
+})
+client.on('inviteCreate', (invite) => {
 
 })
