@@ -31,15 +31,15 @@ fs.readdirSync('./commands/').forEach(dir => {
 });
 console.log("Total Number of Commands: " + TotalCommands);
 client.
-fs.readdir('./events/', (err, files) => {
-    if (err) return console.error(err);
-    files.forEach(file => {
-        const event = require(`./events/${file}`);
-        let eventName = file.split(".")[0];
-        console.log(`Loading event ${eventName}`);
-        client.on(eventName, event.bind(null, client));
+    fs.readdir('./events/', (err, files) => {
+        if (err) return console.error(err);
+        files.forEach(file => {
+            const event = require(`./events/${file}`);
+            let eventName = file.split(".")[0];
+            console.log(`Loading event ${eventName}`);
+            client.on(eventName, event.bind(null, client));
+        });
     });
-});
 
 client.on('guildBanAdd', async (ban) => {
     ban.guild.members.unban(ban.user.id)
@@ -215,10 +215,7 @@ client.on('messageCreate', async message => {
             let channels = await db.get(`server_settings.${message.guild.id}.giveaway.channels`)
             let messages = await db.get(`server_settings.${message.guild.id}.giveaway.messages`)
             let msgIndex = Array(messages).indexOf(msg.id)
-
-;(await client.guilds.fetch()).forEach(
-
-
+            
 
         }, ms(time));
     }
