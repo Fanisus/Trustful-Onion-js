@@ -1,1 +1,0 @@
-document.getElementById('ele').innerHTML = "<p>Help me</p>"

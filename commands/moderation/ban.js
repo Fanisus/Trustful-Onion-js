@@ -1,4 +1,5 @@
 const Database = require('flaster-db');
+const discord = require('discord.js');
 const db = new Database.Database('./Database', {
     file: 'Data.json',
     cli: false,
@@ -10,21 +11,49 @@ module.exports = {
         name: ''
     },
     aliases: [],
-    run: async function (client, message, args) {
+    /**
+     * @param {discord.Client} client 
+     * @param {discord.Message} message
+     * @param {Array} args
+     */
+    messageCommand: async function (client, message, args) {
 
-        // Mak a ban command
-        if (!message.member.permissions.has('KICK_MEMBERS') && (!message.member.permissions.has('ADMINISTRATOR'))) return message.channel.send('You do not have permission to use this command.');
-        if (!args[0]) return message.channel.send('Please enter a user to ban.');
-        let reason;
-        if (!args[1]) reason = args.slice(1).join(' ') || `You were banned from ${message.guild.name} for no reason. One day you will be forgotten.`;
-        let user = message.mentions.members.first();
-        if (user.bannable) {
-            user.ban({reason: reason});
-            message.channel.send(`${user.id} was banned from the server.`);
 
-            user.guild.bans.remove(user.id)
-        } else {
-            message.channel.send('This user cannot be banned.');
+
+    },
+    /**
+     * @param {discord.Client} client 
+     * @param {discord.Interaction} interaction 
+     */
+    slashCommand: async function (client, interaction) {
+
+        if (interaction.member.permissions.has("BAN_MEMBERS") || interaction.member.permissions.has("ADMIN")) {
+            await interaction.deferReply()
+            let target = interaction.options.getUser('target')
+            let reason = interaction.options.getString('reason')
+            if (!reason) {
+                reason = "No Reason Provided"
+            }
+            // await interaction.guild.members.ban(target, reason)
+            let member = await interaction.guild.members.fetch(target)
+            await interaction.editReply("Banned " + member.user.username + "#" + member.user.discriminator + " " + target)
+        }
+
+    },
+    /**
+     * @param {discord.Client} client 
+     */
+    registerSlash: async function (client) {
+        try {
+            let data = new discord.SlashCommandBuilder()
+                .setName("ban")
+                .setDescription("Ban the mentioned member")
+                .addUserOption(option => option.setName('target').setDescription('Select the target user to ban').setRequired(true))
+                .addStringOption(option => option.setName('reason').setDescription('Reason for ban'))
+                .toJSON()
+            return data
+        } catch (error) {
+            console.log(error)
         }
     }
 }
