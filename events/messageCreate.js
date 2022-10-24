@@ -1,4 +1,5 @@
 const Database = require('flaster-db');
+const fs = require('fs')
 const db = new Database.Database('./Database', {
     file: 'Data.json',
     cli: false,
@@ -14,6 +15,6 @@ module.exports = (client, message) => {
     if (!cmd) {
         if (message.channel.id != db.get(`music_request_channel-${message.guild.id}-text`)) return;
     }
-    cmd.run(client, message, args);
+    cmd.messageCommand(client, message, args);
 
 };
