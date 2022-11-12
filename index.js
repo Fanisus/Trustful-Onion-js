@@ -1,3 +1,4 @@
+const dotenv = require("dotenv").config({})
 const Database = require('flaster-db');
 const db = new Database.Database('./Database', {
     file: 'Data.json',
@@ -61,7 +62,7 @@ fs.readdir('./events/', (err, files) => {
     });
 });
 
-client.login("NzQ3ODIzNzgzODQyNDE0NjYz.GcFjtd.X-UfKnpDugJBq1BmTjeVCCceTBkiqfmgl3MGBw");
+client.login(process.env.TOKEN);
 
 client.on('messageCreate', async message => {
     let args = message.content.slice(prefix.length).trim().split(/ +/g);

@@ -29,8 +29,8 @@ fs.readdirSync('./commands/').forEach(dir => {
         console.log(`Loading Type: COMMAND\nNAME: '${commandName}'\nLOCATION: './commands/${dir}/${file}'\n`);
     })
 });
+
 console.log("Total Number of Commands: " + TotalCommands);
-client.
     fs.readdir('./events/', (err, files) => {
         if (err) return console.error(err);
         files.forEach(file => {
